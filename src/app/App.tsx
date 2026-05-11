@@ -1,10 +1,44 @@
 import { Navigation } from './components/Navigation';
 import { PortfolioCard } from './components/PortfolioCard';
-import { Mail, Instagram, Linkedin, Play } from 'lucide-react';
+import { Mail, Instagram, Linkedin, Play, X } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { photographerProfile, photographyWork, videoWork } from './data/portfolioData';
 
 export default function App() {
+  const [activeVideo, setActiveVideo] = useState<{ title: string; href: string } | null>(null);
+
+  useEffect(() => {
+    if (!activeVideo) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActiveVideo(null);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [activeVideo]);
+
+  const toEmbedUrl = (url: string) => {
+    if (url.includes('youtube.com/watch?v=')) {
+      const videoId = url.split('v=')[1]?.split('&')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    }
+    if (url.includes('youtu.be/')) {
+      const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+      return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+    }
+    if (url.includes('vimeo.com/')) {
+      const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+      return videoId ? `https://player.vimeo.com/video/${videoId}` : url;
+    }
+    return url;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -80,7 +114,7 @@ export default function App() {
                 image={item.image}
                 title={item.title}
                 category={item.category}
-                href={item.href}
+                onClick={() => setActiveVideo({ title: item.title, href: item.href })}
                 index={index}
               />
             ))}
@@ -160,6 +194,40 @@ export default function App() {
           <p>Copyright 2026 Professional Portfolio. All rights reserved.</p>
         </div>
       </footer>
+
+      {activeVideo && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 flex items-center justify-center"
+          onClick={() => setActiveVideo(null)}
+        >
+          <div
+            className="w-full max-w-5xl bg-background rounded-xl overflow-hidden shadow-2xl border border-border"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <h3 className="text-base sm:text-lg font-medium">{activeVideo.title}</h3>
+              <button
+                type="button"
+                onClick={() => setActiveVideo(null)}
+                className="p-2 rounded-md hover:bg-muted transition-colors"
+                aria-label="Close video modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="aspect-video bg-black">
+              <iframe
+                src={toEmbedUrl(activeVideo.href)}
+                title={activeVideo.title}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

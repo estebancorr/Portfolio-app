@@ -4,22 +4,16 @@ interface PortfolioCardProps {
   image: string;
   title: string;
   category: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
   index: number;
 }
 
-export function PortfolioCard({ image, title, category, href, index }: PortfolioCardProps) {
-  return (
-    <motion.a
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="group relative overflow-hidden rounded-lg aspect-[4/3] cursor-pointer"
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-    >
+export function PortfolioCard({ image, title, category, href, onClick, index }: PortfolioCardProps) {
+  const sharedClassName = 'group relative overflow-hidden rounded-lg aspect-[4/3] cursor-pointer';
+
+  const content = (
+    <>
       <img
         src={image}
         alt={title}
@@ -31,6 +25,37 @@ export function PortfolioCard({ image, title, category, href, index }: Portfolio
           <h3 className="font-medium">{title}</h3>
         </div>
       </div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.1 }}
+        viewport={{ once: true }}
+        className={sharedClassName}
+        onClick={onClick}
+      >
+        {content}
+      </motion.button>
+    );
+  }
+
+  return (
+    <motion.a
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      viewport={{ once: true }}
+      className={sharedClassName}
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {content}
     </motion.a>
   );
 }
